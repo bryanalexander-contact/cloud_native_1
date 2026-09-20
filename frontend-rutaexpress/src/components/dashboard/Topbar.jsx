@@ -1,9 +1,9 @@
 import React from 'react';
 
-export default function Topbar({ userName, onLogout }) {
+export default function Topbar({ title = 'Dashboard', userName, onLogout }) {
     return (
         <header style={styles.topbar}>
-            <h1 style={styles.pageTitle}>Dashboard</h1>
+            <h1 style={styles.pageTitle}>{title}</h1>
             
             <div style={styles.userSection}>
                 <div style={styles.azureBadge}>

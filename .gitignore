@@ -1,14 +1,65 @@
-# Node / React
+# =========================
+# Node / React / Frontend
+# =========================
 node_modules/
 dist/
+dist-ssr/
+*.local
 .env
+.env.*
 .DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+coverage/
+build/
 
+# =========================
 # Java / Maven / Spring Boot
+# =========================
 target/
-.mvn/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+# https://github.com/github/gitignore/blob/main/Java.gitignore
 *.class
 *.log
+*.ctxt
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# =========================
+# IDEs & OS Files
+# =========================
 .idea/
 *.iml
+*.iws
+*.ipr
 .vscode/
+.classpath
+.project
+.settings/
+.springBeans
+.metadata/
+bin/
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# =========================
+# Docker & Infra
+# =========================
+.dockerignore
+*.pem

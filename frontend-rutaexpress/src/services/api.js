@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:8080', // Ajusta según la ruta base de tu BFF
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080', // Usa variable de entorno para apuntar a AWS API Gateway, por defecto localhost
     headers: {
         'Content-Type': 'application/json'
     }
@@ -29,6 +29,17 @@ api.interceptors.request.use(async (config) => {
     }
     return config;
 }, (error) => {
+    return Promise.reject(error);
+});
+
+api.interceptors.response.use((response) => {
+    return response;
+}, (error) => {
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        console.warn("Sesión expirada o sin permisos (401/403). Redirigiendo al login...");
+        // Idealmente aquí se llamaría a MSAL logout, o redirección forzada
+        window.location.href = '/'; 
+    }
     return Promise.reject(error);
 });
 

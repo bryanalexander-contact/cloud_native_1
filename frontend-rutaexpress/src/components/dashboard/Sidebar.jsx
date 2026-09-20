@@ -1,81 +1,85 @@
-import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  Package, 
+  Truck, 
+  BarChart3, 
+  ShieldCheck, 
+  Settings, 
+  HelpCircle 
+} from 'lucide-react';
+
+// Definimos las rutas principales en un arreglo para mantener el código modular
+const MAIN_NAV_ITEMS = [
+  { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+  { name: 'Shipments', path: '/shipments', icon: Package },
+  { name: 'Fleet', path: '/fleet', icon: Truck },
+  { name: 'Reports', path: '/reports', icon: BarChart3 },
+  { name: 'Audit', path: '/audit', icon: ShieldCheck },
+];
+
+const FOOTER_NAV_ITEMS = [
+  { name: 'Settings', path: '/settings', icon: Settings },
+  { name: 'Help', path: '/help', icon: HelpCircle },
+];
 
 export default function Sidebar() {
-    return (
-        <aside style={styles.sidebar}>
-            <div style={styles.logoContainer}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 7H17L21 11V17H19C19 15.9 18.1 15 17 15C15.9 15 15 15.9 15 17H9C9 15.9 8.1 15 7 15C5.9 15 5 15.9 5 17H3V7Z" fill="#3b82f6"/>
-                </svg>
-                <span style={styles.logoText}>RutaExpress</span>
-            </div>
+  return (
+    <aside className="w-60 bg-slate-900 text-slate-400 flex flex-col justify-between h-screen fixed left-0 top-0 border-r border-slate-800 select-none">
+      {/* Contenedor del Logo */}
+      <div className="flex items-center gap-3 px-5 py-6 border-b border-slate-800">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+          <path d="M3 7H17L21 11V17H19C19 15.9 18.1 15 17 15C15.9 15 15 15.9 15 17H9C9 15.9 8.1 15 7 15C5.9 15 5 15.9 5 17H3V7Z" fill="#3b82f6"/>
+        </svg>
+        <span className="text-white text-lg font-bold tracking-wide">RutaExpress</span>
+      </div>
 
-            <nav style={styles.nav}>
-                <a href="#dashboard" style={{...styles.navItem, ...styles.activeItem}}>📊 Dashboard</a>
-                <a href="#shipments" style={styles.navItem}>📦 Shipments</a>
-                <a href="#fleet" style={styles.navItem}>🚚 Fleet</a>
-                <a href="#reports" style={styles.navItem}>📈 Reports</a>
-                <a href="#audit" style={styles.navItem}>📋 Audit</a>
-            </nav>
+      {/* Navegación Principal */}
+      <nav className="flex flex-col gap-1 p-3 flex-1 overflow-y-auto">
+        {MAIN_NAV_ITEMS.map((item) => {
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              end={item.path === '/'}
+              className={({ isActive }) => `
+                flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors
+                ${isActive 
+                  ? 'bg-slate-800 text-white shadow-sm' 
+                  : 'hover:bg-slate-800/50 hover:text-slate-200'
+                }
+              `}
+            >
+              <Icon size={20} className="shrink-0" />
+              <span>{item.name}</span>
+            </NavLink>
+          );
+        })}
+      </nav>
 
-            <div style={styles.footerNav}>
-                <a href="#settings" style={styles.navItem}>⚙️ Settings</a>
-                <a href="#help" style={styles.navItem}>❓ Help</a>
-            </div>
-        </aside>
-    );
+      {/* Navegación Inferior (Settings / Help) */}
+      <div className="p-3 border-t border-slate-800 space-y-1">
+        {FOOTER_NAV_ITEMS.map((item) => {
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              className={({ isActive }) => `
+                flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors
+                ${isActive 
+                  ? 'bg-slate-800 text-white shadow-sm' 
+                  : 'hover:bg-slate-800/50 hover:text-slate-200'
+                }
+              `}
+            >
+              <Icon size={20} className="shrink-0" />
+              <span>{item.name}</span>
+            </NavLink>
+          );
+        })}
+      </div>
+    </aside>
+  );
 }
-
-const styles = {
-    sidebar: {
-        width: '240px',
-        backgroundColor: '#0f172a',
-        color: '#94a3b8',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        padding: '20px 0',
-        height: '100vh',
-        position: 'fixed',
-        left: 0,
-        top: 0,
-    },
-    logoContainer: {
-        display: 'flex',
-        alignItem: 'center',
-        gap: '10px',
-        padding: '0 20px 20px 20px',
-        borderBottom: '1px solid #1e293b',
-    },
-    logoText: {
-        color: '#ffffff',
-        fontSize: '18px',
-        fontWeight: 'bold',
-    },
-    nav: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '4px',
-        padding: '20px 10px',
-        flex: 1,
-    },
-    footerNav: {
-        padding: '10px',
-        borderTop: '1px solid #1e293b',
-    },
-    navItem: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        padding: '10px 14px',
-        color: '#94a3b8',
-        textDecoration: 'none',
-        borderRadius: '6px',
-        fontSize: '14px',
-        fontWeight: '500',
-    },
-    activeItem: {
-        backgroundColor: '#1e293b',
-        color: '#ffffff',
-    }
-};

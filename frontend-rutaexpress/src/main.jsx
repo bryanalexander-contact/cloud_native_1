@@ -5,6 +5,7 @@ import { PublicClientApplication, InteractionRequiredAuthError } from '@azure/ms
 import { MsalProvider } from '@azure/msal-react';
 import { msalConfig, bffTokenRequest } from './auth/authConfig'; // <-- Importar bffTokenRequest
 import { setAuthTokenGetter } from './services/api';
+import './index.css'; 
 
 const msalInstance = new PublicClientApplication(msalConfig);
 
