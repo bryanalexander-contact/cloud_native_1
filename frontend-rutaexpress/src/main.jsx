@@ -17,6 +17,8 @@ msalInstance.initialize().then(async () => {
         msalInstance.setActiveAccount(accounts[0]);
     }
 
+    let isPopupOpen = false;
+
     setAuthTokenGetter(async () => {
         const activeAccount = msalInstance.getActiveAccount();
         if (!activeAccount) return null;
@@ -44,11 +46,19 @@ msalInstance.initialize().then(async () => {
             }
             return response.accessToken;
         } catch (error) {
-            if (error instanceof InteractionRequiredAuthError) {
-                const popupResponse = await msalInstance.acquireTokenPopup(bffTokenRequest);
-                return popupResponse.accessToken;
-                return popupResponse.accessToken;
+            if (error instanceof InteractionRequiredAuthError && !isPopupOpen) {
+                try {
+                    isPopupOpen = true;
+                    const popupResponse = await msalInstance.acquireTokenPopup(bffTokenRequest);
+                    return popupResponse.accessToken;
+                } catch (popupError) {
+                    console.error("Error en popup de autenticación:", popupError);
+                    return null;
+                } finally {
+                    isPopupOpen = false;
+                }
             }
+            console.error("Error al obtener token silenciosamente:", error);
             return null;
         }
     });

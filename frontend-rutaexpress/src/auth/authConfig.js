@@ -12,10 +12,9 @@ export const msalConfig = {
 };
 
 export const loginRequest = {
-    scopes: ["User.Read", "api://8e9ad887-fcb6-4d33-9544-0657e51590e3/bff.read"]
+    scopes: ["User.Read", "api://9126af85-b017-4dff-951b-ad782d64adc9/read"]
 };
 
-// frontend-rutaexpress/src/auth/authConfig.js
 export const bffTokenRequest = {
-    scopes: ["api://8e9ad887-fcb6-4d33-9544-0657e51590e3/bff.read"]
+    scopes: ["api://9126af85-b017-4dff-951b-ad782d64adc9/read"]
 };
