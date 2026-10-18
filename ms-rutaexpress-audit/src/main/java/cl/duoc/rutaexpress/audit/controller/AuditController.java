@@ -31,9 +31,9 @@ public class AuditController {
 
     /**
      * Retorna el historial de auditoría de un envío ordenado por timestamp descendente.
-     * Consumido por el frontend en el TimelineModal.
+     * Se restringe el parámetro a dígitos ({shipmentId:\\d+}) para evitar colisiones con /all.
      */
-    @GetMapping("/{shipmentId}")
+    @GetMapping("/{shipmentId:\\d+}")
     public ResponseEntity<List<AuditLog>> getAuditHistory(@PathVariable Long shipmentId) {
         List<AuditLog> history = auditRepository.findByShipmentIdOrderByTimestampDesc(shipmentId);
         return ResponseEntity.ok(history);
