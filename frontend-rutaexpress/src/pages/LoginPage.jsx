@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMsal } from '@azure/msal-react';
-import { loginRequest } from '../auth/authConfig'; // <-- Ya lo tenías importado
+import { loginRequest } from '../auth/authConfig';
 import LoginHero from '../components/login/LoginHero';
 import LoginBranding from '../components/login/LoginBranding';
 import MicrosoftButton from '../components/login/MicrosoftButton';
@@ -10,7 +10,6 @@ export default function LoginPage() {
     const { instance } = useMsal();
 
     const handleLogin = () => {
-        // Usamos la configuración centralizada de loginRequest para mantener consistencia de scopes
         instance.loginRedirect(loginRequest).catch(error => {
             console.error("Error al iniciar sesión con redirección:", error);
         });

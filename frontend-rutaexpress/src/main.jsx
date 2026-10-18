@@ -12,11 +12,10 @@ const msalInstance = new PublicClientApplication(msalConfig);
 let pendingTokenPromise = null;
 
 msalInstance.initialize().then(async () => {
-    // Control de errores al procesar respuestas de redirección o popups
     try {
         await msalInstance.handleRedirectPromise();
-    } catch (redirectError) {
-        console.warn("Aviso en handleRedirectPromise (hash de URL o sesión previa no válida):", redirectError);
+    } catch (error) {
+        console.warn("Aviso en handleRedirectPromise:", error);
     }
 
     const accounts = msalInstance.getAllAccounts();
@@ -24,9 +23,14 @@ msalInstance.initialize().then(async () => {
         msalInstance.setActiveAccount(accounts[0]);
     }
 
+    // El interceptor SOLO solicita tokens silenciosos en segundo plano
     setAuthTokenGetter(async () => {
-        const activeAccount = msalInstance.getActiveAccount();
+        const activeAccount = msalInstance.getActiveAccount() || msalInstance.getAllAccounts()[0];
         if (!activeAccount) return null;
+
+        if (!msalInstance.getActiveAccount()) {
+            msalInstance.setActiveAccount(activeAccount);
+        }
 
         if (pendingTokenPromise) {
             return pendingTokenPromise;
@@ -40,7 +44,7 @@ msalInstance.initialize().then(async () => {
                 });
                 return response.accessToken;
             } catch (error) {
-                console.warn("No se pudo obtener token silencioso MSAL:", error);
+                console.warn("No se pudo obtener token silencioso (se requiere inicio de sesión explícito):", error.errorMessage || error);
                 return null;
             } finally {
                 pendingTokenPromise = null;

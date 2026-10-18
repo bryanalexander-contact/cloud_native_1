@@ -11,12 +11,17 @@ export const msalConfig = {
     }
 };
 
-// Permisos para inicio de sesión del usuario
+// Permisos para inicio de sesión del usuario (incluye la API del Backend desde el origen)
 export const loginRequest = {
-    scopes: ["openid", "profile", "User.Read"]
+    scopes: [
+        "openid",
+        "profile",
+        "User.Read",
+        "api://9126af85-b017-4dff-951b-ad782d64adc9/read"
+    ]
 };
 
-// Scope explícito para el Backend BFF (debe terminar en /read)
+// Scope explícito para obtención silenciosa de tokens del Backend BFF
 export const bffTokenRequest = {
     scopes: ["api://9126af85-b017-4dff-951b-ad782d64adc9/read"]
 };
