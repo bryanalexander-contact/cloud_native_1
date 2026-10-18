@@ -1,5 +1,4 @@
-// ID de Inquilino (Tenant ID) de tu organización en Azure Portal
-const TENANT_ID = "72fd0b5a-8a6a-4cff-89f6-bde961f7e250";
+const TENANT_ID = "7ecd33b8-57e2-4e0b-ace8-8c8fd532708f";
 
 export const msalConfig = {
     auth: {
@@ -14,12 +13,12 @@ export const msalConfig = {
     }
 };
 
-// 1. Permisos EXCLUSIVOS para la autenticación e inicio de sesión del usuario
+// Permisos para autenticar la identidad del usuario
 export const loginRequest = {
     scopes: ["openid", "profile", "User.Read"]
 };
 
-// 2. Scope EXCLUSIVO para solicitar silenciosamente el token del Backend BFF
+// Permiso para obtener silenciosamente el token que consume el Backend BFF
 export const bffTokenRequest = {
     scopes: ["api://9126af85-b017-4dff-951b-ad782d64adc9/read"]
 };
