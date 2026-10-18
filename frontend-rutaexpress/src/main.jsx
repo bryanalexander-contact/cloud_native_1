@@ -9,23 +9,25 @@ import './index.css';
 
 const msalInstance = new PublicClientApplication(msalConfig);
 
-// Promesa en caché para desduplicar peticiones de token simultáneas
 let pendingTokenPromise = null;
 
 msalInstance.initialize().then(async () => {
-    await msalInstance.handleRedirectPromise();
+    // Control de errores al procesar respuestas de redirección o popups
+    try {
+        await msalInstance.handleRedirectPromise();
+    } catch (redirectError) {
+        console.warn("Aviso en handleRedirectPromise (hash de URL o sesión previa no válida):", redirectError);
+    }
 
     const accounts = msalInstance.getAllAccounts();
     if (accounts.length > 0 && !msalInstance.getActiveAccount()) {
         msalInstance.setActiveAccount(accounts[0]);
     }
 
-    // Registra la obtención de token para el interceptor de Axios
     setAuthTokenGetter(async () => {
         const activeAccount = msalInstance.getActiveAccount();
         if (!activeAccount) return null;
 
-        // Si ya hay una petición de token en curso, reutilizarla
         if (pendingTokenPromise) {
             return pendingTokenPromise;
         }
