@@ -6,5 +6,7 @@ public record ShipmentStatusEvent(
     Long shipmentId,
     String previousStatus,
     String newStatus,
+    String location,
+    String user,
     LocalDateTime timestamp
 ) {}

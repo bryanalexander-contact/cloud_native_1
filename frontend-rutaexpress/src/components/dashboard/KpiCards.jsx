@@ -1,16 +1,26 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-export default function KpiCards() {
+export default function KpiCards({ totalShipments = 5 }) {
+    const navigate = useNavigate();
+
     return (
         <div style={styles.grid}>
-            {/* Tarjeta 1: Envíos por Hora */}
-            <div style={styles.card}>
+            {/* Tarjeta 1: Envíos Totales y por Hora */}
+            <div 
+                style={{ ...styles.card, cursor: 'pointer' }} 
+                onClick={() => navigate('/shipments')}
+                title="Ver gestión de envíos"
+            >
                 <div style={styles.cardHeader}>
-                    <span style={styles.cardTitle}>Envíos por Hora</span>
+                    <span style={styles.cardTitle}>Envíos en Tránsito / Hora</span>
                     <span style={styles.liveTag}>🟢 Real-time</span>
                 </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: '6px' }}>
+                    <span style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a' }}>{totalShipments}</span>
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>envíos registrados</span>
+                </div>
                 <div style={styles.chartContainer}>
-                    {/* Gráfico de línea simulado con SVG */}
                     <svg viewBox="0 0 300 80" style={styles.svgLine}>
                         <path d="M 0 50 Q 50 20 100 45 T 200 30 T 300 10" fill="none" stroke="#3b82f6" strokeWidth="2.5" />
                     </svg>
@@ -19,22 +29,38 @@ export default function KpiCards() {
 
             {/* Tarjeta 2: Lead Time Promedio */}
             <div style={styles.card}>
-                <span style={styles.cardTitle}>Lead Time Promedio ⓘ</span>
+                <div style={styles.cardHeader}>
+                    <span style={styles.cardTitle}>Lead Time Promedio</span>
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>ⓘ SLA</span>
+                </div>
                 <div style={styles.metricContent}>
                     <div style={styles.gaugeMock}>
                         <span style={styles.gaugeValue}>39 m</span>
                     </div>
                 </div>
+                <span style={{ fontSize: '11px', color: '#16a34a', textAlign: 'center', fontWeight: '600' }}>
+                    ✓ 12% más rápido que la meta mensual
+                </span>
             </div>
 
             {/* Tarjeta 3: Capacidad Activa de la Flota */}
-            <div style={styles.card}>
-                <span style={styles.cardTitle}>Capacidad Activa de la Flota ⓘ</span>
+            <div 
+                style={{ ...styles.card, cursor: 'pointer' }}
+                onClick={() => navigate('/fleet')}
+                title="Ver flota de camiones"
+            >
+                <div style={styles.cardHeader}>
+                    <span style={styles.cardTitle}>Capacidad de Flota</span>
+                    <span style={styles.liveTag}>🚛 Flota</span>
+                </div>
                 <div style={styles.metricContent}>
                     <div style={styles.circleProgress}>
                         <span style={styles.circleText}>70%</span>
                     </div>
                 </div>
+                <span style={{ fontSize: '11px', color: '#2563eb', textAlign: 'center', fontWeight: '600' }}>
+                    Haz click para gestionar camiones ›
+                </span>
             </div>
         </div>
     );
@@ -43,19 +69,19 @@ export default function KpiCards() {
 const styles = {
     grid: {
         display: 'grid',
-        gridTemplateColumns: '1.5fr 1fr 1fr',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
         gap: '20px',
-        marginBottom: '24px',
     },
     card: {
         backgroundColor: '#ffffff',
-        borderRadius: '10px',
+        borderRadius: '12px',
         padding: '20px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
         border: '1px solid #e2e8f0',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
+        transition: 'transform 0.15s, box-shadow 0.15s',
     },
     cardHeader: {
         display: 'flex',
@@ -63,9 +89,11 @@ const styles = {
         alignItems: 'center',
     },
     cardTitle: {
-        fontSize: '14px',
-        fontWeight: '600',
-        color: '#64748b',
+        fontSize: '13px',
+        fontWeight: '700',
+        color: '#475569',
+        textTransform: 'uppercase',
+        letterSpacing: '0.025em',
     },
     liveTag: {
         fontSize: '11px',
@@ -73,11 +101,11 @@ const styles = {
         color: '#16a34a',
         padding: '2px 8px',
         borderRadius: '12px',
-        fontWeight: '500',
+        fontWeight: '600',
     },
     chartContainer: {
-        height: '60px',
-        marginTop: '10px',
+        height: '45px',
+        marginTop: '6px',
     },
     svgLine: {
         width: '100%',
@@ -90,16 +118,17 @@ const styles = {
         padding: '10px 0',
     },
     gaugeMock: {
-        fontSize: '24px',
-        fontWeight: 'bold',
+        fontSize: '30px',
+        fontWeight: '800',
         color: '#0f172a',
     },
     gaugeValue: {
-        fontSize: '22px',
+        fontSize: '32px',
+        fontWeight: '800',
     },
     circleProgress: {
-        width: '60px',
-        height: '60px',
+        width: '65px',
+        height: '65px',
         borderRadius: '50%',
         border: '5px solid #3b82f6',
         display: 'flex',
@@ -107,8 +136,8 @@ const styles = {
         justifyContent: 'center',
     },
     circleText: {
-        fontSize: '14px',
-        fontWeight: 'bold',
+        fontSize: '18px',
+        fontWeight: '800',
         color: '#0f172a',
     }
 };

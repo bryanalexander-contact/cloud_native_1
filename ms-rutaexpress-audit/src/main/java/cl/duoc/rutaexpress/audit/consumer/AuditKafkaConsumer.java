@@ -3,7 +3,6 @@ package cl.duoc.rutaexpress.audit.consumer;
 import cl.duoc.rutaexpress.audit.event.ShipmentStatusEvent;
 import cl.duoc.rutaexpress.audit.model.AuditLog;
 import cl.duoc.rutaexpress.audit.repository.AuditRepository;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -12,11 +11,14 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 @Component
-@RequiredArgsConstructor
 public class AuditKafkaConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(AuditKafkaConsumer.class);
     private final AuditRepository auditRepository;
+
+    public AuditKafkaConsumer(AuditRepository auditRepository) {
+        this.auditRepository = auditRepository;
+    }
 
     @KafkaListener(topics = "shipment-status-topic", groupId = "audit-group")
     public void listenShipmentStatus(ShipmentStatusEvent event) {

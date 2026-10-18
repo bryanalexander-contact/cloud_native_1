@@ -1,16 +1,12 @@
 package cl.duoc.rutaexpress.shipments.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "shipments")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Shipment {
 
     @Id
@@ -30,11 +26,28 @@ public class Shipment {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    public Shipment() {}
+
+    public Shipment(Long id, String trackingCode, String recipientName, String destination, String origin, String status, LocalDateTime createdAt) {
+        this.id = id;
+        this.trackingCode = trackingCode;
+        this.recipientName = recipientName;
+        this.destination = destination;
+        this.origin = origin;
+        this.status = status;
+        this.createdAt = createdAt;
+    }
+
     @PrePersist
     public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-        if (this.status == null) {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+        if (this.status == null || this.status.isBlank()) {
             this.status = "Creado";
+        }
+        if (this.trackingCode == null || this.trackingCode.isBlank()) {
+            this.trackingCode = "RE-" + (System.currentTimeMillis() % 1000000);
         }
     }
 }

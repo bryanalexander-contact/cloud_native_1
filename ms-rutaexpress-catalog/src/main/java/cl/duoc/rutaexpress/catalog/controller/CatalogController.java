@@ -2,7 +2,6 @@ package cl.duoc.rutaexpress.catalog.controller;
 
 import cl.duoc.rutaexpress.catalog.model.CatalogItem;
 import cl.duoc.rutaexpress.catalog.repository.CatalogRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +10,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/catalog")
-@RequiredArgsConstructor
 public class CatalogController {
 
     private final CatalogRepository catalogRepository;
+
+    public CatalogController(CatalogRepository catalogRepository) {
+        this.catalogRepository = catalogRepository;
+    }
 
     /** Listar todos los ítems activos del catálogo */
     @GetMapping

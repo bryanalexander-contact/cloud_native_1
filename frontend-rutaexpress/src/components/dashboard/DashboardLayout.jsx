@@ -29,7 +29,7 @@ export default function DashboardLayout({ children, title = 'Dashboard' }) {
             <Sidebar />
 
             <main style={styles.mainContent}>
-                <Topbar title={title} userName={activeAccount?.name || activeAccount?.username} onLogout={handleLogout} />
+                <Topbar title={title} userName={activeAccount?.name || activeAccount?.username} userEmail={activeAccount?.username} onLogout={handleLogout} />
                 {children}
             </main>
         </div>

@@ -1,15 +1,19 @@
 package cl.duoc.rutaexpress.notify.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class NotificationMessage implements Serializable {
     private String recipient;
     private String subject;
     private String body;
+
+    public NotificationMessage() {}
+
+    public NotificationMessage(String recipient, String subject, String body) {
+        this.recipient = recipient;
+        this.subject = subject;
+        this.body = body;
+    }
 }

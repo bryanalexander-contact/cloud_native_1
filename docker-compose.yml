@@ -58,6 +58,7 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - MS_SHIPMENTS_URL=http://ms-shipments:8085
       - MS_CATALOG_URL=http://ms-catalog:8081
       - MS_NOTIFY_URL=http://ms-notify:8082
       - MS_REPORT_URL=http://ms-report:8083
