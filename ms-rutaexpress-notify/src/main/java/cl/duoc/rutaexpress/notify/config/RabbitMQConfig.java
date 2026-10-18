@@ -19,13 +19,13 @@ public class RabbitMQConfig {
     public static final String EXCHANGE_NAME = "notification-exchange";
     public static final String ROUTING_KEY = "notify.key";
 
-    @Value("${app.rabbitmq.queue:notification-queue}")
+    @Value("${app.rabbitmq.queue:" + QUEUE_NAME + "}")
     private String queueName;
 
-    @Value("${app.rabbitmq.exchange:notification-exchange}")
+    @Value("${app.rabbitmq.exchange:" + EXCHANGE_NAME + "}")
     private String exchangeName;
 
-    @Value("${app.rabbitmq.routingkey:notify.key}")
+    @Value("${app.rabbitmq.routingkey:" + ROUTING_KEY + "}")
     private String routingKey;
 
     @Bean

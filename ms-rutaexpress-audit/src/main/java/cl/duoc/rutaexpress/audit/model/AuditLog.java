@@ -1,16 +1,17 @@
 package cl.duoc.rutaexpress.audit.model;
 
+import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 
-@Document(collection = "shipment_audit")
+@Entity
+@Table(name = "shipment_audit")
 @Data
 public class AuditLog {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private Long shipmentId;
     private String previousStatus;
@@ -21,7 +22,7 @@ public class AuditLog {
 
     public AuditLog() {}
 
-    public AuditLog(String id, Long shipmentId, String previousStatus, String newStatus, String location, String user, LocalDateTime timestamp) {
+    public AuditLog(Long id, Long shipmentId, String previousStatus, String newStatus, String location, String user, LocalDateTime timestamp) {
         this.id = id;
         this.shipmentId = shipmentId;
         this.previousStatus = previousStatus;
