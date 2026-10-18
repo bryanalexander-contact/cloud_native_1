@@ -27,15 +27,17 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  oracle-db:
-    image: gvenzl/oracle-free:23.6-slim-faststart
-    container_name: oracle-db
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: postgres-db
     ports:
-      - "1521:1521"
+      - "5432:5432"
     environment:
-      - ORACLE_PASSWORD=admin123
+      - POSTGRES_DB=rutaexpress
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin123
     volumes:
-      - oracle_data:/opt/oracle/oradata
+      - postgres_data:/var/lib/postgresql/data
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -46,6 +48,14 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
 
   # ==========================================
   # MICROSERVICIOS BACKEND
@@ -69,14 +79,7 @@ services:
       - ms-notify
       - ms-report
       - ms-audit
-      
-  mongodb:
-    image: mongo:6.0
-    container_name: mongodb
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
+
   ms-shipments:
     build:
       context: ./ms-rutaexpress-shipments
@@ -86,12 +89,12 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - SPRING_DATASOURCE_URL=jdbc:oracle:thin:@oracle-db:1521/FREEPDB1
-      - SPRING_DATASOURCE_USERNAME=system
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/rutaexpress
+      - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=admin123
     depends_on:
       - kafka
-      - oracle-db
+      - postgres-db
 
   ms-catalog:
     build:
@@ -101,11 +104,11 @@ services:
       - "8081:8081"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:oracle:thin:@oracle-db:1521/FREEPDB1
-      - SPRING_DATASOURCE_USERNAME=system
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/rutaexpress
+      - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=admin123
     depends_on:
-      - oracle-db
+      - postgres-db
 
   ms-notify:
     build:
@@ -130,12 +133,12 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-      - SPRING_DATASOURCE_URL=jdbc:oracle:thin:@oracle-db:1521/FREEPDB1
-      - SPRING_DATASOURCE_USERNAME=system
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/rutaexpress
+      - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=admin123
     depends_on:
       - kafka
-      - oracle-db
+      - postgres-db
 
   ms-audit:
     build:
@@ -164,5 +167,5 @@ services:
       - ms-bff
 
 volumes:
-  oracle_data:
+  postgres_data:
   mongodb_data:
