@@ -1,5 +1,8 @@
+import { useEffect } from 'react';
 import { useMsal } from '@azure/msal-react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { setAuthTokenGetter } from './services/api';
+import { bffTokenRequest } from './auth/authConfig';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ShipmentsPage from './pages/ShipmentsPage';
@@ -11,7 +14,31 @@ import HelpPage from './pages/HelpPage';
 import DashboardLayout from './components/dashboard/DashboardLayout';
 
 export default function App() {
-    const { accounts } = useMsal();
+    const { instance, accounts } = useMsal();
+
+    // Registra el extractor de token para Axios en cuanto hay un usuario autenticado
+    useEffect(() => {
+        if (accounts.length > 0) {
+            setAuthTokenGetter(async () => {
+                try {
+                    // Solicita el token silenciosamente para el backend con el scope correcto (/read)
+                    const response = await instance.acquireTokenSilent({
+                        ...bffTokenRequest,
+                        account: accounts[0]
+                    });
+                    return response.accessToken;
+                } catch (error) {
+                    console.warn("Error en token silencioso, reintentando...", error);
+                    // Si falla el silencioso, solicita consentimiento en ventana interactiva
+                    const response = await instance.acquireTokenPopup({
+                        ...bffTokenRequest,
+                        account: accounts[0]
+                    });
+                    return response.accessToken;
+                }
+            });
+        }
+    }, [instance, accounts]);
 
     return (
         <BrowserRouter>
