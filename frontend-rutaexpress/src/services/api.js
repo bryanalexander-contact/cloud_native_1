@@ -1,7 +1,18 @@
 import axios from 'axios';
 
+// Detecta automáticamente el host actual (localhost o la IP de AWS) manteniendo soporte para .env
+const getApiBaseUrl = () => {
+    if (import.meta.env.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL;
+    }
+    if (typeof window !== 'undefined') {
+        return `http://${window.location.hostname}:8080`;
+    }
+    return 'http://54.204.31.3:8080';
+};
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
+    baseURL: getApiBaseUrl(),
     headers: {
         'Content-Type': 'application/json'
     }
