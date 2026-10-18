@@ -11,12 +11,12 @@ export const msalConfig = {
     }
 };
 
-// Scopes únicamente para autenticar al usuario (corrige el error AADSTS500011)
+// Permisos para inicio de sesión del usuario
 export const loginRequest = {
     scopes: ["openid", "profile", "User.Read"]
 };
 
-// Scopes requeridos para consumir los endpoints del Backend / BFF
+// Scope explícito para el Backend BFF (debe terminar en /read)
 export const bffTokenRequest = {
     scopes: ["api://9126af85-b017-4dff-951b-ad782d64adc9/read"]
 };

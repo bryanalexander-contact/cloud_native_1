@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// Detecta automáticamente el host actual (localhost o la IP de AWS) manteniendo soporte para .env
 const getApiBaseUrl = () => {
     if (import.meta.env.VITE_API_URL) {
         return import.meta.env.VITE_API_URL;
@@ -18,15 +17,12 @@ const api = axios.create({
     }
 });
 
-// Variable interna para almacenar la función que obtiene el token
 let tokenGetter = null;
 
-// Función para registrar el proveedor del token una sola vez (ej. al iniciar la app)
 export const setAuthTokenGetter = (getTokenFunction) => {
     tokenGetter = getTokenFunction;
 };
 
-// El interceptor se registra UNA SOLA VEZ al cargar el archivo
 api.interceptors.request.use(async (config) => {
     if (tokenGetter) {
         try {
@@ -36,7 +32,6 @@ api.interceptors.request.use(async (config) => {
             }
         } catch (error) {
             console.error("Error al obtener el token en el interceptor:", error);
-            // NO lanzar popup aquí, dejar que la request falle y el componente maneje el error
         }
     }
     return config;
@@ -48,8 +43,7 @@ api.interceptors.response.use((response) => {
     return response;
 }, (error) => {
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-        console.warn("Sesión expirada o sin permisos (401/403). El usuario debe re-autenticarse.");
-        // NO redirigir automáticamente — eso causa un loop infinito
+        console.warn("Sesión expirada o sin permisos en el backend (401/403).");
     }
     return Promise.reject(error);
 });

@@ -1,66 +1,51 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
-import { PublicClientApplication, InteractionRequiredAuthError } from '@azure/msal-browser';
+import { PublicClientApplication } from '@azure/msal-browser';
 import { MsalProvider } from '@azure/msal-react';
-import { msalConfig, bffTokenRequest } from './auth/authConfig'; // <-- Importar bffTokenRequest
+import { msalConfig, bffTokenRequest } from './auth/authConfig';
 import { setAuthTokenGetter } from './services/api';
-import './index.css'; 
+import './index.css';
 
 const msalInstance = new PublicClientApplication(msalConfig);
+
+// Promesa en caché para desduplicar peticiones de token simultáneas
+let pendingTokenPromise = null;
 
 msalInstance.initialize().then(async () => {
     await msalInstance.handleRedirectPromise();
 
     const accounts = msalInstance.getAllAccounts();
-    if (accounts.length > 0) {
+    if (accounts.length > 0 && !msalInstance.getActiveAccount()) {
         msalInstance.setActiveAccount(accounts[0]);
     }
 
-    let isPopupOpen = false;
-
+    // Registra la obtención de token para el interceptor de Axios
     setAuthTokenGetter(async () => {
         const activeAccount = msalInstance.getActiveAccount();
         if (!activeAccount) return null;
 
-        try {
-            let response = await msalInstance.acquireTokenSilent({
-                ...bffTokenRequest,
-                account: activeAccount
-            });
-
-            const accessToken = response.accessToken;
-            if (!accessToken) return null;
-
-            const payload = JSON.parse(atob(accessToken.split('.')[1]));
-            const now = Math.floor(Date.now() / 1000);
-            const exp = typeof payload?.exp === 'number' ? payload.exp : 0;
-            const isExpiringSoon = exp <= (now + 120);
-
-            if (isExpiringSoon) {
-                response = await msalInstance.acquireTokenSilent({
-                    ...bffTokenRequest,
-                    account: activeAccount,
-                    forceRefresh: true
-                });
-            }
-            return response.accessToken;
-        } catch (error) {
-            if (error instanceof InteractionRequiredAuthError && !isPopupOpen) {
-                try {
-                    isPopupOpen = true;
-                    const popupResponse = await msalInstance.acquireTokenPopup(bffTokenRequest);
-                    return popupResponse.accessToken;
-                } catch (popupError) {
-                    console.error("Error en popup de autenticación:", popupError);
-                    return null;
-                } finally {
-                    isPopupOpen = false;
-                }
-            }
-            console.error("Error al obtener token silenciosamente:", error);
-            return null;
+        // Si ya hay una petición de token en curso, reutilizarla
+        if (pendingTokenPromise) {
+            return pendingTokenPromise;
         }
+
+        pendingTokenPromise = (async () => {
+            try {
+                const response = await msalInstance.acquireTokenSilent({
+                    ...bffTokenRequest,
+                    account: activeAccount
+                });
+                return response.accessToken;
+            } catch (error) {
+                console.warn("No se pudo obtener token silencioso MSAL:", error);
+                return null;
+            } finally {
+                pendingTokenPromise = null;
+            }
+        })();
+
+        return pendingTokenPromise;
     });
 
     ReactDOM.createRoot(document.getElementById('root')).render(

@@ -15,41 +15,32 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-/**
- * Configuración de Seguridad Central del Gateway (BFF).
- * Actúa como Resource Server validando el JWT emitido por Azure AD.
- */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // URL pública del frontend desplegado, inyectada por variable de entorno (fallback a localhost para dev)
     @Value("${PROD_FRONTEND_URL:http://localhost:5173}")
     private String frontendUrl;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Permite Preflight CORS (navegadores)
-                .requestMatchers("/api/public/**").permitAll() // Endpoints públicos
-                .anyRequest().authenticated() // El resto exige JWT válido
-            )
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/api/public/**").permitAll()
+                        .anyRequest().authenticated())
+                .oauth2ResourceServer(
+                        oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
 
         return http.build();
     }
 
-    /**
-     * Convierte los claims del JWT (específicamente 'scp' o 'roles' de Azure)
-     * a autoridades de Spring Security (prefijo ROLE_).
-     */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        grantedAuthoritiesConverter.setAuthoritiesClaimName("scp"); // Se ajusta al claim de roles/scopes de Azure AD
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("scp");
         grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
@@ -57,14 +48,10 @@ public class SecurityConfig {
         return jwtAuthenticationConverter;
     }
 
-    /**
-     * Configuración de CORS permitiendo orígenes seguros.
-     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Permite solicitudes desde localhost (desarrollo) o desde la IP pública EC2 (producción)
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", frontendUrl)); 
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", frontendUrl));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
         configuration.setAllowCredentials(true);
