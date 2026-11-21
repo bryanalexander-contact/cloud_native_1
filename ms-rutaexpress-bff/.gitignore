@@ -1,0 +1,53 @@
+# Maven & Build Output
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IDEs
+## STS / Eclipse
+.apt_generated
+.classpath
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+## IntelliJ IDEA
+.idea
+*.iws
+*.iml
+*.ipr
+
+## VS Code
+.vscode/
+
+## NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+
+# Node / React / Vite (Frontend)
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Secretos y Variables de Entorno
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+application-local.properties
+application-local.yml
+
+# Logs & Sistema Operativo
+*.log
+.DS_Store
+Thumbs.db

@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* Tus estilos personalizados o globales adicionales van aquí abajo */
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
