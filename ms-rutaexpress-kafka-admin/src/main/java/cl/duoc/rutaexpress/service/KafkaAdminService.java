@@ -1,7 +1,7 @@
-package main.java.cl.duoc.rutaexpress.service;
+package cl.duoc.rutaexpress.service;
 
-import cl.duoc.rutaexpress.kafkaadmin.dto.CreateTopicRequest;
-import cl.duoc.rutaexpress.kafkaadmin.dto.UpdateTopicConfigRequest;
+import cl.duoc.rutaexpress.dto.CreateTopicRequest;
+import cl.duoc.rutaexpress.dto.UpdateTopicConfigRequest;
 import org.apache.kafka.clients.admin.*;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
@@ -22,7 +22,6 @@ public class KafkaAdminService {
         this.adminClient = adminClient;
     }
 
-    // 1. Crear tópico con particiones, réplicas, retention y cleanup policy
     public Map<String, Object> createTopic(CreateTopicRequest req) throws ExecutionException, InterruptedException {
         int partitions = req.partitions() != null ? req.partitions() : 3;
         short replicas = req.replicationFactor() != null ? req.replicationFactor() : (short) 3;
@@ -49,12 +48,10 @@ public class KafkaAdminService {
         );
     }
 
-    // 2. Listar todos los tópicos
     public Set<String> listTopics() throws ExecutionException, InterruptedException {
         return adminClient.listTopics().names().get();
     }
 
-    // 3. Inspeccionar detalle de un tópico (particiones, líderes, réplicas y configuraciones)
     public Map<String, Object> describeTopic(String topicName) throws ExecutionException, InterruptedException {
         TopicDescription description = adminClient.describeTopics(List.of(topicName))
                 .allTopicNames().get().get(topicName);
@@ -82,7 +79,6 @@ public class KafkaAdminService {
         );
     }
 
-    // 4. Actualizar configuraciones (retention.ms, cleanup.policy) y/o aumentar particiones
     public Map<String, Object> updateTopic(String topicName, UpdateTopicConfigRequest req) throws ExecutionException, InterruptedException {
         ConfigResource resource = new ConfigResource(ConfigResource.Type.TOPIC, topicName);
         List<AlterConfigOp> ops = new ArrayList<>();
@@ -111,13 +107,11 @@ public class KafkaAdminService {
         return describeTopic(topicName);
     }
 
-    // 5. Eliminar tópico
     public Map<String, String> deleteTopic(String topicName) throws ExecutionException, InterruptedException {
         adminClient.deleteTopics(List.of(topicName)).all().get();
         return Map.of("message", "Tópico eliminado correctamente", "topic", topicName);
     }
 
-    // 6. Listar Consumer Groups activos
     public Object listConsumerGroups() throws ExecutionException, InterruptedException {
         return adminClient.listConsumerGroups().all().get().stream()
                 .map(g -> Map.of(
@@ -126,7 +120,6 @@ public class KafkaAdminService {
                 )).toList();
     }
 
-    // 7. Inspeccionar estado, miembros y offsets de un Consumer Group
     public Map<String, Object> inspectConsumerGroup(String groupId) throws ExecutionException, InterruptedException {
         ConsumerGroupDescription desc = adminClient.describeConsumerGroups(List.of(groupId))
                 .all().get().get(groupId);
