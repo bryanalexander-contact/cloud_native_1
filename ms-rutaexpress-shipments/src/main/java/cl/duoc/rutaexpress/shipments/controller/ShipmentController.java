@@ -6,6 +6,7 @@ import cl.duoc.rutaexpress.shipments.repository.ShipmentRepository;
 import cl.duoc.rutaexpress.shipments.service.ShipmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public class ShipmentController {
 
     /** Crear un nuevo envío */
     @PostMapping
-    public ResponseEntity<Shipment> createShipment(@RequestBody Shipment shipment) {
+    public ResponseEntity<Shipment> createShipment(@RequestBody @NonNull Shipment shipment) {
         Shipment saved = shipmentRepository.save(shipment);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }

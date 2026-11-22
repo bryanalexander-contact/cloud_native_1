@@ -1,12 +1,10 @@
-package main.java.cl.duoc.rutaexpress.controller;
+package cl.duoc.rutaexpress.controller;
 
-import cl.duoc.rutaexpress.kafkaadmin.dto.CreateTopicRequest;
-import cl.duoc.rutaexpress.kafkaadmin.dto.UpdateTopicConfigRequest;
-import cl.duoc.rutaexpress.kafkaadmin.service.KafkaAdminService;
+import cl.duoc.rutaexpress.dto.CreateTopicRequest;
+import cl.duoc.rutaexpress.dto.UpdateTopicConfigRequest;
+import cl.duoc.rutaexpress.service.KafkaAdminService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/kafka-admin")

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 @Service
 public class KafkaAdminService {
@@ -59,9 +58,10 @@ public class KafkaAdminService {
         ConfigResource resource = new ConfigResource(ConfigResource.Type.TOPIC, topicName);
         Config config = adminClient.describeConfigs(List.of(resource)).all().get().get(resource);
 
-        Map<String, String> activeConfigs = config.entries().stream()
+        Map<String, String> activeConfigs = new HashMap<>();
+        config.entries().stream()
                 .filter(entry -> !entry.isDefault() || entry.name().equals("retention.ms") || entry.name().equals("cleanup.policy"))
-                .collect(Collectors.toMap(ConfigEntry::name, ConfigEntry::value));
+                .forEach(entry -> activeConfigs.put(entry.name(), entry.value() != null ? entry.value() : ""));
 
         var partitionsInfo = description.partitions().stream()
                 .map(p -> Map.<String, Object>of(

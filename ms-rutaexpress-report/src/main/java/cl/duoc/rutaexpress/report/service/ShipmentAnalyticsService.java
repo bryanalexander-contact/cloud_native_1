@@ -45,7 +45,7 @@ public class ShipmentAnalyticsService {
         totalProcessingTimeMs.addAndGet(event.processingTimeMs());
 
         String loc = event.location() != null ? event.location() : "Desconocida";
-        eventsByLocation.merge(loc, 1, Integer::sum);
+        eventsByLocation.compute(loc, (k, v) -> v == null ? 1 : v + 1);
 
         log.info("📈 [Métricas] Métrica procesada para envío #{} en ubicación '{}'",
                 event.shipmentId(), loc);

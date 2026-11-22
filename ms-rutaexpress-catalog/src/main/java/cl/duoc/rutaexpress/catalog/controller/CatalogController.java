@@ -4,6 +4,7 @@ import cl.duoc.rutaexpress.catalog.model.CatalogItem;
 import cl.duoc.rutaexpress.catalog.repository.CatalogRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +27,7 @@ public class CatalogController {
 
     /** Obtener un ítem por ID */
     @GetMapping("/{id}")
-    public ResponseEntity<CatalogItem> getById(@PathVariable Long id) {
+    public ResponseEntity<CatalogItem> getById(@PathVariable @NonNull Long id) {
         return catalogRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -40,7 +41,7 @@ public class CatalogController {
 
     /** Crear un nuevo ítem en el catálogo */
     @PostMapping
-    public ResponseEntity<CatalogItem> create(@RequestBody CatalogItem item) {
+    public ResponseEntity<CatalogItem> create(@RequestBody @NonNull CatalogItem item) {
         item.setActive(true);
         CatalogItem saved = catalogRepository.save(item);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -48,7 +49,7 @@ public class CatalogController {
 
     /** Actualizar un ítem existente */
     @PutMapping("/{id}")
-    public ResponseEntity<CatalogItem> update(@PathVariable Long id, @RequestBody CatalogItem item) {
+    public ResponseEntity<CatalogItem> update(@PathVariable @NonNull Long id, @RequestBody CatalogItem item) {
         return catalogRepository.findById(id)
                 .map(existing -> {
                     existing.setName(item.getName());
@@ -61,7 +62,7 @@ public class CatalogController {
 
     /** Desactivar (soft delete) un ítem */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable @NonNull Long id) {
         return catalogRepository.findById(id)
                 .map(existing -> {
                     existing.setActive(false);

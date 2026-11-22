@@ -1,4 +1,4 @@
-package main.java.cl.duoc.rutaexpress.kafkaadmin.config;
+package cl.duoc.rutaexpress.kafkaadmin.config;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;

@@ -12,10 +12,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Service
 public class ShipmentService {
@@ -42,7 +44,7 @@ public class ShipmentService {
     }
 
     @Transactional
-    public Shipment updateStatus(Long id, UpdateShipmentStatusDTO dto) {
+    public Shipment updateStatus(@NonNull Long id, UpdateShipmentStatusDTO dto) {
         long startTime = System.currentTimeMillis();
 
         Shipment shipment = shipmentRepository.findById(id)
@@ -71,8 +73,10 @@ public class ShipmentService {
             statusEvent
         );
 
+        String messageKey = Objects.requireNonNull(String.valueOf(id));
+
         // 2. Publicar evento de estado en Kafka (Tópico 1 - clave = id para mantener orden por envío)
-        kafkaTemplate.send(eventsTopic, String.valueOf(id), statusEvent);
+        kafkaTemplate.send(Objects.requireNonNull(eventsTopic), messageKey, statusEvent);
         log.info("📤 Evento publicado en Kafka [{}]: envioId={}, nuevoEstado={}", eventsTopic, id, dto.status());
 
         // 3. Publicar evento de métricas en Kafka (Tópico 2 - analítica en tiempo real)
@@ -88,7 +92,7 @@ public class ShipmentService {
             LocalDateTime.now()
         );
 
-        kafkaTemplate.send(analyticsTopic, String.valueOf(id), analyticsEvent);
+        kafkaTemplate.send(Objects.requireNonNull(analyticsTopic), messageKey, analyticsEvent);
         log.info("📊 Evento analítico publicado en Kafka [{}]: envioId={}", analyticsTopic, id);
 
         return updatedShipment;

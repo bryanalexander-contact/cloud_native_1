@@ -1,4 +1,4 @@
-package main.java.cl.duoc.rutaexpress.dto;
+package cl.duoc.rutaexpress.dto;
 
 public record UpdateTopicConfigRequest(
     Long retentionMs,
