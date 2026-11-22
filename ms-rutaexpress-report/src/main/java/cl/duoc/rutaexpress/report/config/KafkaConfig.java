@@ -1,85 +1,99 @@
 package cl.duoc.rutaexpress.report.config;
 
-import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.config.TopicConfig;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.lang.NonNull;
+import org.springframework.util.backoff.FixedBackOff;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 @Configuration
-public class RabbitMQConfig {
+public class KafkaConfig {
 
-    public static final String DLX_EXCHANGE = "rutaexpress.dlx";
-    public static final String REPORT_DLQ = "report.dlq";
-    public static final String REPORT_DLQ_ROUTING_KEY = "report.dead";
+    private static final Logger log = LoggerFactory.getLogger(KafkaConfig.class);
 
-    @Value("${app.rabbitmq.queue:report.queue}")
-    private String queueName;
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
 
-    @Value("${app.rabbitmq.exchange:report.exchange}")
-    private String exchangeName;
+    @Value("${spring.kafka.consumer.group-id:ms-report-group}")
+    private String groupId;
 
-    @Value("${app.rabbitmq.routingkey:report.generated}")
-    private String routingKey;
+    @Value("${app.kafka.topic.events:rutaexpress.shipments.events}")
+    private String eventsTopic;
 
+    @Value("${app.kafka.topic.analytics:rutaexpress.shipments.analytics}")
+    private String analyticsTopic;
+
+    // Tópico 1: 3 particiones, 3 réplicas, retención de 7 días (604800000 ms)
     @Bean
-    public DirectExchange deadLetterExchange() {
-        return new DirectExchange(DLX_EXCHANGE);
+    public NewTopic shipmentEventsTopic() {
+        return TopicBuilder.name(Objects.requireNonNull(eventsTopic))
+                .partitions(3)
+                .replicas(3)
+                .config(TopicConfig.RETENTION_MS_CONFIG, "604800000")
+                .config(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_DELETE)
+                .build();
     }
 
+    // Tópico 2: 3 particiones, 3 réplicas, retención de 30 días (2592000000 ms) para analítica
     @Bean
-    public Queue reportDeadLetterQueue() {
-        return QueueBuilder.durable(REPORT_DLQ).build();
-    }
-
-    @Bean
-    public Binding reportDlqBinding() {
-        return BindingBuilder.bind(reportDeadLetterQueue())
-                .to(deadLetterExchange())
-                .with(REPORT_DLQ_ROUTING_KEY);
-    }
-
-    @Bean
-    public Queue reportQueue() {
-        return QueueBuilder.durable(Objects.requireNonNull(queueName))
-                .deadLetterExchange(DLX_EXCHANGE)
-                .deadLetterRoutingKey(REPORT_DLQ_ROUTING_KEY)
+    public NewTopic shipmentAnalyticsTopic() {
+        return TopicBuilder.name(Objects.requireNonNull(analyticsTopic))
+                .partitions(3)
+                .replicas(3)
+                .config(TopicConfig.RETENTION_MS_CONFIG, "2592000000")
+                .config(TopicConfig.CLEANUP_POLICY_CONFIG, TopicConfig.CLEANUP_POLICY_DELETE)
                 .build();
     }
 
     @Bean
-    public TopicExchange reportExchange() {
-        return new TopicExchange(exchangeName);
+    @NonNull
+    public ConsumerFactory<String, String> consumerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+        props.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
+        props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, StringDeserializer.class);
+        return new DefaultKafkaConsumerFactory<>(props);
     }
 
-    @Bean
-    public Binding reportBinding(@NonNull Queue reportQueue, @NonNull TopicExchange reportExchange) {
-        return BindingBuilder.bind(reportQueue).to(reportExchange).with(routingKey);
-    }
-
-    @Bean
-    public RabbitAdmin rabbitAdmin(@NonNull ConnectionFactory connectionFactory) {
-        return new RabbitAdmin(connectionFactory);
-    }
-
+    // Manejo de errores: 3 reintentos cada 2 segundos y registro contextual en log
     @Bean
     @NonNull
-    public Jackson2JsonMessageConverter jsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
+    public DefaultErrorHandler kafkaErrorHandler() {
+        FixedBackOff backOff = new FixedBackOff(2000L, 3L);
+        return new DefaultErrorHandler((record, exception) -> {
+            log.error("❌ Error definitivo procesando evento Kafka | Tópico: {} | Partición: {} | Offset: {} | Payload: {} | Causa: {}",
+                    record.topic(), record.partition(), record.offset(), record.value(), exception.getMessage());
+        }, backOff);
     }
 
     @Bean
-    public RabbitTemplate rabbitTemplate(
-            @NonNull ConnectionFactory connectionFactory,
-            @NonNull Jackson2JsonMessageConverter messageConverter) {
-        RabbitTemplate template = new RabbitTemplate(connectionFactory);
-        template.setMessageConverter(messageConverter);
-        return template;
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
+            @NonNull ConsumerFactory<String, String> consumerFactory,
+            @NonNull DefaultErrorHandler kafkaErrorHandler) {
+        ConcurrentKafkaListenerContainerFactory<String, String> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory);
+        factory.setCommonErrorHandler(kafkaErrorHandler);
+        return factory;
     }
 }
